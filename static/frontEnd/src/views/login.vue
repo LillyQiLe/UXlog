@@ -10,6 +10,7 @@
 </template>
 
 <script>
+import axios from 'axios'
 export default {
   data () {
     return {
@@ -25,12 +26,12 @@ export default {
     }
   },
   methods: {
-    login () {
+    login: function () {
       var that = this
-      that.$http.post('http://127.0.0.1:8080/webapi/login_user', {
-        UserName: that.username,
-        Password: that.password
-      }).then(function (res) {
+      axios.post('http://127.0.0.1:8080/webapi/login_user', {
+        UserName: this.username,
+        Password: this.password
+      }).then(res => {
         that.msg = res.data
       })
     }

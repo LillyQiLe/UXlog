@@ -1,18 +1,18 @@
 <template>
   <div>
-      <el-input v-model="username" placeholder="请输入用户名" class="input"></el-input>
-      <el-radio-group v-model="sex">
-        <el-radio :label="0">女</el-radio>
-        <el-radio :label="1">男</el-radio>
-        <el-radio :label="2">跨性别</el-radio>
-        <el-radio :label="3">未知</el-radio>
-      </el-radio-group>
-      <el-input v-model="email" placeholder="请输入邮箱" class="input"></el-input>
-      <el-input type="password" v-model="password" placeholder="请输入密码" class="input"></el-input>
-      <el-button round @click="register">注册</el-button>
-      <div>
-        {{ msg }}
-      </div>
+    <el-input v-model="username" placeholder="请输入用户名" class="input"></el-input>
+    <el-radio-group v-model="sex">
+      <el-radio :label="0">女</el-radio>
+      <el-radio :label="1">男</el-radio>
+      <el-radio :label="2">跨性别</el-radio>
+      <el-radio :label="3">未知</el-radio>
+    </el-radio-group>
+    <el-input v-model="email" placeholder="请输入邮箱" class="input"></el-input>
+    <el-input type="password" v-model="password" placeholder="请输入密码" class="input"></el-input>
+    <el-button round @click="register">注册</el-button>
+    <div>
+      {{ msg }}
+    </div>
   </div>
 </template>
 
@@ -21,12 +21,14 @@ import axios from 'axios'
 export default {
   data () {
     return {
-      username: '',
-      sex: '',
-      email: '',
-      pic: 'xx',
-      password: '',
-      msg: ''
+      userInfo: {
+        username: '',
+        sex: '',
+        email: '',
+        pic: 'xx',
+        password: '',
+        msg: ''
+      }
     }
   },
   methods: {
@@ -47,7 +49,7 @@ export default {
 </script>
 
 <style>
-.input{
+.input {
   width: 200px;
 }
 </style>

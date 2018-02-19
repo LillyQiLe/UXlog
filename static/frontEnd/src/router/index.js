@@ -4,6 +4,7 @@ import Login from './../views/login.vue'
 import Register from './../views/register.vue'
 import Main from './../views/main'
 import Uxlog from '@/views/uxlog'
+import NewRegister from '@/views/newregister'
 
 Vue.use(Router)
 
@@ -41,6 +42,11 @@ export default new Router({
       path: '/register',
       name: 'register',
       component: Register
+    },
+    {
+      path: '/newregister',
+      name: 'newregister',
+      component: NewRegister
     }
   ]
 })

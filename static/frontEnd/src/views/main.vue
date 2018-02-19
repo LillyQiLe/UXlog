@@ -6,7 +6,7 @@
     <el-breadcrumb separator="/" class="option">
       <el-breadcrumb-item :to="{ path: 'uxlog' }">首页</el-breadcrumb-item>
       <el-breadcrumb-item :to="{ path: 'login'}">登录</el-breadcrumb-item>
-      <el-breadcrumb-item :to="{ path: 'register'}">注册</el-breadcrumb-item>
+      <el-breadcrumb-item :to="{ path: 'newregister'}">注册</el-breadcrumb-item>
     </el-breadcrumb>
     <!-- <button @click="jump">button跳转</button> -->
     <div>

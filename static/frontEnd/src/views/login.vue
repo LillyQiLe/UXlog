@@ -1,8 +1,8 @@
 <template>
   <div>
-      <el-input v-model="username" placeholder="请输入用户名" class="input"></el-input>
-      <el-input type="password" v-model="password" placeholder="请输入密码" class="input"></el-input>
-      <el-button round @click="login">圆形按钮</el-button>
+      <el-input v-model="userInfo.UserName" placeholder="请输入用户名" class="input"></el-input>
+      <el-input type="password" v-model="userInfo.Password" placeholder="请输入密码" class="input"></el-input>
+      <el-button round @click="login">登录</el-button>
       <div>
         {{ msg }}
       </div>
@@ -11,11 +11,14 @@
 
 <script>
 import axios from 'axios'
+import qs from 'qs'
 export default {
   data () {
     return {
-      username: '',
-      password: '',
+      userInfo: {
+        UserName: '',
+        Password: ''
+      },
       msg: ''
     }
   },
@@ -28,10 +31,7 @@ export default {
   methods: {
     login: function () {
       var that = this
-      axios.post('http://127.0.0.1:8080/webapi/login_user', {
-        UserName: this.username,
-        Password: this.password
-      }).then(res => {
+      axios.post('http://127.0.0.1:8080/webapi/login_user', qs.stringify(that.userInfo)).then(res => {
         that.msg = res.data
       })
     }

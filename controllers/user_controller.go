@@ -222,7 +222,15 @@ func (this *AvatarController) Post(){
 	if v == nil {
 		this.Abort("404")
 	}
+	type res struct {
+		StateCode int
+		URL 	string
+	}
+
 	f, h, _ := this.GetFile("image")
+	if f == nil{
+		this.Abort("404")
+	}
 	pram := strings.Split(h.Filename, ".")
 	img_type := pram[len(pram) - 1]
 	//得到文件的名称
@@ -235,11 +243,15 @@ func (this *AvatarController) Post(){
 	//关闭上传的文件，不然的话会出现临时文件不能清除的情况
 	f.Close()
 	//保存文件到指定的位置
-
+	var r res
 	if err := this.SaveToFile("image", path.Join("static/avatar",fileName));err != nil {
-		this.Data["json"] = `{"StateCode":0}`
+		r.StateCode = 0
+		r.URL = ""
+		this.Data["json"] = &r
 	}else{
-		this.Data["json"] = `{"StateCode":1}`
+		r.StateCode = 1
+		r.URL = "user_avatar/" + fileName
+		this.Data["json"] = &r
 	}
 	this.ServeJSON()
 }

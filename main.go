@@ -6,6 +6,7 @@ import (
 )
 
 func main() {
+	beego.SetStaticPath("static/avatar/", "avatar")
 	beego.Run()
 }
 

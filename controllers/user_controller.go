@@ -8,6 +8,9 @@ import (
 	"time"
 	"crypto/md5"
 	"encoding/hex"
+	"path"
+	"strings"
+	"strconv"
 )
 
 
@@ -26,6 +29,10 @@ type LoginController struct {
 	beego.Controller
 }
 
+//AvatarController
+type AvatarController struct {
+	beego.Controller
+}
 
 //POST: create user
 //json
@@ -128,11 +135,11 @@ func (this *RegisterController)Get(){
 	if err := get_user_info(userName,&res.UserId, &res.BlogNum, &res.FansCount, &res.FollowCount,
 							&res.PicUrl, &res.UserSex, &res.UserEmail, &res.RegTime);
 		err != nil{
-		this.Ctx.Abort(404, "get user info error")
+		this.Abort("404")
 	}else{
 		res.StateCode = 1;
 		if res_json, err := json.Marshal(res); err != nil{
-			this.Ctx.Abort(500, "error")
+			this.Abort("500")
 		}else {
 			this.Data["json"] = string(res_json)
 		}
@@ -208,6 +215,44 @@ func (this *LoginController) Delete(){
 	}
 	this.ServeJSON()
 }
+
+func (this *AvatarController) Post(){
+	//image，这是一个key值，对应的是html中input type-‘file’的name属性值
+	v := this.GetSession("login_state")
+	if v == nil {
+		this.Abort("404")
+	}
+	f, h, _ := this.GetFile("image")
+	pram := strings.Split(h.Filename, ".")
+	img_type := pram[len(pram) - 1]
+	//得到文件的名称
+
+	md5Ctx := md5.New()
+	md5Ctx.Write([]byte(v.(string) +  strconv.FormatInt(time.Now().Unix(), 10)))
+	md5FileName:= md5Ctx.Sum(nil)
+	fileName := hex.EncodeToString(md5FileName)
+	fileName += "." + img_type
+	//关闭上传的文件，不然的话会出现临时文件不能清除的情况
+	f.Close()
+	//保存文件到指定的位置
+
+	if err := this.SaveToFile("image", path.Join("static/avatar",fileName));err != nil {
+		this.Data["json"] = `{"StateCode":0}`
+	}else{
+		this.Data["json"] = `{"StateCode":1}`
+	}
+	this.ServeJSON()
+}
+
+func (this *AvatarController) Get(){
+	filename := this.Ctx.Input.Param(":filename");
+	if(filename == ""){
+		this.Abort("404")
+	}
+	this.Ctx.Output.Download("static/avatar/" + filename,filename)
+}
+
+
 
 
 /*-------------------------------------------function-------------------------------------------*/
@@ -287,4 +332,3 @@ func  check_email(UserEmail string) (bool, error) {
 func  check_password(UserEmail string) (bool, error) {
 	return true, nil
 }
-

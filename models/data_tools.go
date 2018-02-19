@@ -27,7 +27,7 @@ var insert_comment = `INSERT INTO uxlog.t_comment_info (user_id, blog_id, commen
 //Initial database
 func (dt*DBtools) InitDataBase(){
 	dt.dbconn = new(sql.DB)
-	dt.dbsetting = "root:3375@tcp(127.0.0.1:3306)/uxlog?charset=utf8";
+	dt.dbsetting = "root:123456@tcp(127.0.0.1:3306)/uxlog?charset=utf8";
 }
 
 //Open DataBase

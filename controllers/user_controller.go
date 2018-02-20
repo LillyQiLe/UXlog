@@ -11,6 +11,7 @@ import (
 	"path"
 	"strings"
 	"strconv"
+	"crypto"
 )
 
 
@@ -71,10 +72,7 @@ func (this *RegisterController) Post() {
 		res.StateCode = 0;
 	}
 
-	md5Ctx := md5.New()
-	md5Ctx.Write([]byte(user.Password))
-	md5PasswordHex := md5Ctx.Sum(nil)
-	user.Password = hex.EncodeToString(md5PasswordHex)
+	user.Password = get_md5(user.Password)
 
 	if _, err := check_sex(user.UserSex); err!=nil{
 		res.StateCode = 0
@@ -169,10 +167,7 @@ func (this *LoginController) Post(){
 	userName := this.GetString("UserName")
 	password := this.GetString("Password")
 
-	md5Ctx := md5.New()
-	md5Ctx.Write([]byte(password))
-	md5PasswordHex := md5Ctx.Sum(nil)
-	password = hex.EncodeToString(md5PasswordHex)
+	password = get_md5(password)
 
 	if res, err := verify_user(userName, password); err != nil{
 		this.Ctx.Abort(500, "error")
@@ -234,7 +229,6 @@ func (this *AvatarController) Post(){
 	pram := strings.Split(h.Filename, ".")
 	img_type := pram[len(pram) - 1]
 	//得到文件的名称
-
 	md5Ctx := md5.New()
 	md5Ctx.Write([]byte(v.(string) +  strconv.FormatInt(time.Now().Unix(), 10)))
 	md5FileName:= md5Ctx.Sum(nil)
@@ -344,3 +338,14 @@ func  check_email(UserEmail string) (bool, error) {
 func  check_password(UserEmail string) (bool, error) {
 	return true, nil
 }
+
+
+func get_md5(str string)(string){
+	shaCtx := crypto.SHA256.New()
+	shaCtx.Write([]byte(str + sha256_salt))
+	shaPasswordHex := shaCtx.Sum(nil)
+	return hex.EncodeToString(shaPasswordHex)
+}
+
+/*-------------------------------------------const value-------------------------------------------*/
+var sha256_salt = "6ae4e8682272f33a6b87c1534e58354869d45807de6c327f5afd7e928db5cc6b"

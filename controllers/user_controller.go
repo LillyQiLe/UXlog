@@ -12,6 +12,7 @@ import (
 	"strings"
 	"strconv"
 	"crypto"
+	"net/http"
 )
 
 
@@ -255,7 +256,8 @@ func (this *AvatarController) Get(){
 	if(filename == ""){
 		this.Abort("404")
 	}
-	this.Ctx.Output.Download("static/avatar/" + filename,filename)
+	//this.Ctx.Output.Download("static/avatar/" + filename,filename)
+	http.ServeFile(this.Ctx.ResponseWriter, this.Ctx.Request, "static/avatar/" + filename)
 }
 
 

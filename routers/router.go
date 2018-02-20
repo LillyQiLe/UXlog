@@ -26,12 +26,13 @@ func init() {
 	//		GET: check whether the user name is occupied
 	beego.Router("/webapi/check_username", &controllers.CheckUserNameController{})
 
-
-
-
 	//	Login API
 	//		POST: login
 	beego.Router("/webapi/login_user", &controllers.LoginController{})
+
+
+	beego.Router("/webapi/user_avatar/?:filename", &controllers.AvatarController{})
+
 
 	beego.AutoRouter(&controllers.RegisterController{})
 

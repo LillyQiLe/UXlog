@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"strconv"
 	"time"
+	"os"
 )
 
 func TestRegisterController_Post(t *testing.T) {
@@ -15,3 +16,26 @@ func TestRegisterController_Post(t *testing.T) {
 	println(hex.EncodeToString(md5PasswordHex))
 }
 
+func TestPicMaker_OutputFile(t *testing.T) {
+	const (
+		dx	= 100
+		dy	= 40
+		fontFile = "SentyZHAO.ttf"
+		fontSize = 23
+		fontDPI = 72
+	)
+
+	mk := PicMaker{}
+	mk.SetFormate(dx, dy, fontFile, fontSize, fontDPI)
+	file,err := os.Create("qwe.png")
+	if err != nil{
+		println(err.Error())
+	}
+	defer file.Close()
+	mk.OutputFile("hello")
+	_,err = mk.WriteTo(file)
+	if err != nil{
+		println(err.Error())
+	}
+
+}

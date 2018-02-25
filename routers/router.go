@@ -29,6 +29,13 @@ func init() {
 	//	Login API
 	//		POST: login
 	beego.Router("/webapi/login_user", &controllers.LoginController{})
+	beego.Router("/webapi/logout", &controllers.LogoutController{})
+	beego.Router("/webapi/getinfo", &controllers.GetInfoController{})
+
+
+	beego.Router("/webapi/getveritycode", &controllers.VerityCodeController{})
+	beego.Router("/webapi/checkveritycode", &controllers.VerityCodeController{})
+
 
 
 	beego.Router("/webapi/user_avatar/?:filename", &controllers.AvatarController{})

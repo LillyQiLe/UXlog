@@ -9,9 +9,9 @@ type RedisTools struct{
 	Network string
 	Address string
 }
-
-
-func (et *RedisTools)AddLoginToken(token_str string, json_str string) (bool, error) {
+//TODO
+//设置过期时间
+func (et *RedisTools) AddToken(token_str string, json_str string) (bool, error) {
 	c, err := redis.Dial(et.Network, et.Address)
 	if err != nil {
 		return false, err
@@ -27,7 +27,7 @@ func (et *RedisTools)AddLoginToken(token_str string, json_str string) (bool, err
 }
 
 
-func (et *RedisTools)GetLoginStates(token_str string)(string, error){
+func (et *RedisTools) GetTokenValue(token_str string)(string, error){
 	c, err := redis.Dial(et.Network, et.Address)
 	if err != nil {
 		return "", err
@@ -44,7 +44,7 @@ func (et *RedisTools)GetLoginStates(token_str string)(string, error){
 
 }
 
-func (et *RedisTools)DelLoginStates(token_str string)(error){
+func (et *RedisTools) DelToken(token_str string)(error){
 	c, err := redis.Dial(et.Network, et.Address)
 	if err != nil {
 		return err

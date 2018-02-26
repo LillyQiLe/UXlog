@@ -14,6 +14,8 @@ import (
 	"crypto"
 	"net/http"
 	"math/rand"
+	"bytes"
+	"encoding/base64"
 )
 
 type DatabaseController struct {
@@ -75,14 +77,16 @@ func (this *RegisterController) Post() {
 	}
 
 	verify_code := this.GetString("VerifyCode")
+	verify_code_token := this.GetString("VerifyCodeToken")
+	conn := models.RedisTools{"tcp", "127.0.0.1:6379"}
+	code, _ :=conn.GetTokenValue(verify_code_token)
 
-	code := this.GetSession("verifycode")
-	if code == nil{
+	if code == ""{
 		this.Data["json"]  = res_info{StateCode:0}
 		this.ServeJSON()
 		return
 	}else {
-		if strings.ToLower(verify_code) != strings.ToLower(code.(string)){
+		if strings.ToLower(verify_code) != strings.ToLower(code){
 			this.Data["json"]  = res_info{StateCode:0}
 			this.ServeJSON()
 			return
@@ -138,6 +142,7 @@ func (this *RegisterController) Post() {
 		this.Ctx.Abort(500, "error")
 	}else {
 		this.Data["json"] = string(res_json)
+		conn.DelToken(verify_code_token)
 		this.ServeJSON()
 		return
 	}
@@ -171,20 +176,20 @@ func (this *LoginController) Post(){
 		StateCode int
 		Token string
 	}
+	verify_code_token := this.GetString("VerifyCodeToken")
+	conn := models.RedisTools{"tcp", "127.0.0.1:6379"}
+	code, _ :=conn.GetTokenValue(verify_code_token)
 
-	code := this.GetSession("verifycode")
-	if code == nil{
+	if code == ""{
 		this.Data["json"]  = res_info{StateCode:0}
 		this.ServeJSON()
 		return
 	}else {
-		if strings.ToLower(verify_code) != strings.ToLower(code.(string)){
+		if strings.ToLower(verify_code) != strings.ToLower(code){
 			this.Data["json"]  = res_info{StateCode:0}
 			this.ServeJSON()
 			return
 		}
-		code := generateVerifyCode()
-		this.SetSession("verifycode", code)
 	}
 
 	password = get_sha256(password)
@@ -197,7 +202,7 @@ func (this *LoginController) Post(){
 			conn := models.RedisTools{"tcp", "127.0.0.1:6379"}
 			token := get_sha256(userName + strconv.FormatInt(time.Now().Unix(), 10))
 
-			_,err := conn.GetLoginStates(token)
+			_,err := conn.GetTokenValue(token)
 			if err != nil {
 
 				type info struct {
@@ -221,7 +226,7 @@ func (this *LoginController) Post(){
 					if res_json, err := json.Marshal(res); err != nil{
 						this.Abort("500")
 					}else {
-						conn.AddLoginToken(token, string(res_json))
+						conn.AddToken(token, string(res_json))
 					}
 				}
 			}
@@ -229,6 +234,7 @@ func (this *LoginController) Post(){
 		}else {
 			this.Data["json"] = &res_info{StateCode:0}
 		}
+		conn.DelToken(verify_code_token)
 		this.ServeJSON()
 	}
 }
@@ -240,7 +246,7 @@ func (this *GetInfoController) Post(){
 	}
 	token := this.GetString("Token")
 	conn := models.RedisTools{"tcp", "127.0.0.1:6379"}
-	v, err := conn.GetLoginStates(token)
+	v, err := conn.GetTokenValue(token)
 	if err != nil {
 		println(err.Error())
 		this.Data["json"] = &res{ StateCode:0}
@@ -255,7 +261,7 @@ func (this *LogoutController) Post(){
 	token := this.GetString("Token")
 	println(token)
 	conn := models.RedisTools{"tcp", "127.0.0.1:6379"}
-	v := conn.DelLoginStates(token)
+	v := conn.DelToken(token)
 	if v != nil {
 		this.Data["json"] = `{"StateCode":0}`
 	}else{
@@ -268,7 +274,7 @@ func (this *AvatarController) Post(){
 	//image，这是一个key值，对应的是html中input type-‘file’的name属性值
 	token := this.GetString("Token")
 	conn := models.RedisTools{"tcp", "127.0.0.1:6379"}
-	v, err := conn.GetLoginStates(token)
+	v, err := conn.GetTokenValue(token)
 	if err != nil {
 		this.Abort("404")
 	}
@@ -317,8 +323,16 @@ func (this *AvatarController) Get(){
 
 func (this *VerityCodeController) Get(){
 	code := generateVerifyCode()
-	this.SetSession("verifycode", code)
-	//TODO
+	conn := models.RedisTools{"tcp", "127.0.0.1:6379"}
+	token := get_sha256(this.Ctx.Request.RemoteAddr + code)
+
+	conn.AddToken(token, code)
+
+	type res struct{
+		PngBytes string
+		Token	string
+	}
+
 	const (
 		dx	= 100
 		dy	= 40
@@ -326,11 +340,16 @@ func (this *VerityCodeController) Get(){
 		fontSize = 23
 		fontDPI = 72
 	)
+	pngBuff := bytes.NewBuffer(nil)
 
 	mk := PicMaker{}
 	mk.SetFormate(dx, dy, fontFile, fontSize, fontDPI)
 	mk.OutputFile(code)
-	mk.WriteTo(this.Ctx.ResponseWriter)
+	mk.WriteTo(pngBuff)
+	dist := make([]byte, 4096)
+	base64.StdEncoding.Encode(dist, pngBuff.Bytes())
+	this.Data["json"] = &res{string(dist), token}
+	this.ServeJSON()
 }
 
 func (this *VerityCodeController) Post(){
@@ -339,13 +358,15 @@ func (this *VerityCodeController) Post(){
 	}
 
 	verify_code := this.GetString("VerifyCode")
+	verify_code_token := this.GetString("VerifyCodeToken")
+	conn := models.RedisTools{"tcp", "127.0.0.1:6379"}
+	code, _ :=conn.GetTokenValue(verify_code_token)
 
-	code := this.GetSession("verifycode")
-	if code == nil{
+	if code == ""{
 		this.Data["json"]  = res_info{StateCode:0}
 		this.ServeJSON()
 	}else {
-		if strings.ToLower(verify_code) != strings.ToLower(code.(string)){
+		if strings.ToLower(verify_code) != strings.ToLower(code){
 
 			this.Data["json"]  = res_info{StateCode:0}
 		}else {
